@@ -1,0 +1,381 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        h2 {
+            margin-top: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"] {
+            width: calc(100% - 15px);
+            padding: 10px;
+            border-radius: 5px 0 0 5px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        button {
+            width: 80px;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #currentWeather,
+        #forecastWeather {
+            margin-top: 20px;
+        }
+
+        #currentWeather p,
+        #forecastWeather p {
+            margin: 5px 0;
+        }
+
+        .input {
+            display: flex;
+        }
+
+        .input input {
+            width: 75%;
+        }
+
+        .input button {
+            width: 20%;
+        }
+
+        footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #eadddd;
+            color: #181717;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        footer img {
+            width: 20px;
+            background-color: transparent;
+            color: white;
+            margin-left: 10px;
+        }
+
+        #hurly-weather-forecast {
+            display: none;
+        }
+
+
+        @media (max-width: 600px) {
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .input input {
+                width: 50%;
+                margin-left: 10px;
+            }
+
+            .input button {
+                width: 35%;
+            }
+
+            #instead {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h3 style="text-align: center; font-weight: 700; color: #3498db;">Real Time Weather Forecast</h3>
+        <div class="input">
+            <input type="text" id="input" placeholder="Enter city">
+            <button onclick="fetchWeather()">Get Weather</button>
+        </div>
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <span id="instead" style="margin-left: 5px; margin-top: 25px;"><span style="text-decoration: line-through; color: #7d7b7b;">Typing</span>, get your location instantly</span>
+            <img id="userLocation" style="width: 30px; margin-top: 20px; cursor: pointer;"
+                src="/images/location-icon.png" alt="location-icon" srcset="">
+        </div>
+        <div id="currentWeather">
+            <!-- Current weather data will be displayed here -->
+        </div>
+        <div id="forecastWeather">
+            <!-- Forecast data will be displayed here -->
+        </div>
+        <div id="hurly-weather-forecast">
+            <!-- hurly weather forecast -->
+        </div>
+        <div id="loader" class="loader"></div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-social">
+            <div class="social-icons">
+                <a style="text-decoration: none;" href="https://www.instagram.com/msaadmizri?igsh=aGN0OGtyYWJ0b2Fi"
+                    target="_blank" class="social-icon">
+                    <img src="images/Instagram_icon.png" alt="Instagram">
+                </a>
+                <a style="text-decoration: none;" href="https://web.facebook.com/Mr.Saad.Mizri" target="_blank"
+                    class="social-icon">
+                    <img src="images/Facebook_Logo_2023.png" alt="Facebook">
+                </a>
+                <a style="text-decoration: none;" href="https://twitter.com/M_saad_Mizri" target="_blank"
+                    class="social-icon">
+                    <img style="filter: grayscale(100%) brightness(0%);" src="images/X_logo_2023_(white).png"
+                        alt="Twitter">
+                </a>
+                <a href="https://www.linkedin.com/in/engr-muhammad-saad-panni-11ba7b152?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
+                    target="_blank" class="social-icon">
+                    <img style="width: 24px; margin-bottom: -2px; margin-left: -1px;" src="images/linkedin.png"
+                        alt="Linkedin">
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+                const forecastWeather = document.getElementById("hurly-weather-forecast");
+        function showHD() {
+            if(document.getElementById("hurly-weather-forecast").style.display = "none"){
+                document.getElementById("hurly-weather-forecast").style.display = "block"
+            }
+            window.scrollBy(0, 620);
+            
+        }
+        var day = 2;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const userLocation = document.getElementById("userLocation");
+            const cityInput = document.getElementById("input");
+
+            userLocation.addEventListener("click", function () {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        const cityName = `${latitude}, ${longitude}`;
+                        cityInput.value = cityName;
+                        fetchWeather();
+                    });
+                } else {
+                    alert("Geolocation is not supported by this browser.");
+                }
+            });
+        });
+
+
+        const cityInput = document.getElementById("input");
+        function useLocation() {
+            navigator.geolocation.getCurrentPosition(position => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                var cityName = `${latitude}, ${longitude}`;
+                cityInput.value = cityName;
+            });
+        }
+
+        document.getElementById("input").addEventListener("keypress", function (event) {
+                    forecastWeather.innerHTML = "";
+                    forecastWeather.style.display = "none"
+            if (event.key === "Enter") {
+                fetchWeather();
+            }
+        });
+        var inputData;
+        function fetchWeather() {
+        forecastWeather.innerHTML = "";
+        forecastWeather.style.display = "none"
+            document.getElementById("loader").style.display = "block";
+            inputData = document.getElementById("input").value;
+            // Fetching current weather data
+            fetch(`https://api.weatherapi.com/v1/current.json?key=2858555c919045d58dc75313242704&q=${inputData}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('City not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+    const currentWeather = document.getElementById("currentWeather");
+    currentWeather.innerHTML = `
+        <h2 style="font-weight: 700; color: #3498db;">Current Weather in ${data.location.name}</h3>
+            <h1 style = "margin-top: -10px; margin-bottom: -5px"><strong></strong> ${data.current.temp_c} <span style = "color: gray">°C<span><img src="${data.current.condition.icon}" alt="${data.current.condition.text}" style="vertical-align: middle; margin-right: 5px;"></h1>
+        <p><strong>Region:</strong> ${data.location.region}</p>
+        <p><strong>Feels like:</strong> ${data.current.feelslike_c}°C</p>
+        <p><strong>Wind Speed:</strong> ${data.current.wind_kph} km/h</p>
+        <p><strong>Humidity:</strong> ${data.current.humidity}%</p>
+        <p><strong>Condition:</strong> ${data.current.condition.text}</p>
+    `;
+
+    document.getElementById("input").value = "";
+})
+
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('City not found. Please enter a valid city.');
+                    document.getElementById("input").value = ""; // Clear the input field
+                    document.getElementById("loader").style.display = "none";
+                    return; // Stop further processing
+                });
+
+
+
+
+
+            // Fetching weather forecast for tomorrow
+            fetch(`https://api.weatherapi.com/v1/forecast.json?key=2858555c919045d58dc75313242704&q=${inputData}&days=2`)
+                .then(response => response.json())
+                .then(data => {
+                    const tomorrowForecast = data.forecast.forecastday[1];
+                    const forecastWeather = document.getElementById("forecastWeather");
+                    forecastWeather.innerHTML = `
+                    <h3 style="font-weight: 700; color: #3498db;">Weather Forecast for Tomorrow</h3>
+                    <p><strong>Date:</strong> ${tomorrowForecast.date}</p>
+                    <p><strong>Average Temperature:</strong> ${tomorrowForecast.day.avgtemp_c}°C</p>
+                    <p><strong>Condition:</strong> ${tomorrowForecast.day.condition.text}</p>
+                    <p><strong>Max Temperature:</strong> ${tomorrowForecast.day.maxtemp_c}°C</p>
+                    <p><strong>Min Temperature:</strong> ${tomorrowForecast.day.mintemp_c}°C</p>
+                    <button onclick="nextDay()">Next Day</button>
+                    <button id="HDBtn" style=" width: fit-content; margin-bottom: 20px;" onclick="showHD()">Hourly Forecast</button>
+                `;
+                    document.getElementById("loader").style.display = "none";
+                    // Fetch hourly weather data
+                    fetchHourlyWeather(inputData);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Data not found. Please enter a valid city.');
+                    document.getElementById("loader").style.display = "none";
+                });
+
+        }
+
+        function fetchHourlyWeather(city) {
+            fetch(`https://api.weatherapi.com/v1/forecast.json?key=2858555c919045d58dc75313242704&q=${city}&days=2`)
+                .then(response => response.json())
+                .then(data => {
+                    const hourlyForecast = data.forecast.forecastday[1].hour;
+                    displayHourlyForecast(hourlyForecast);
+                })
+                .catch(error => {
+                    console.error('Error fetching hourly weather:', error);
+                });
+        }
+
+        function displayHourlyForecast(hourlyData) {
+
+            const hourlyDiv = document.createElement("div");
+            hourlyDiv.innerHTML = "<h3 style='font-weight: 700; color: #3498db;'>Hourly Weather Forecast</h3>";
+            hourlyData.forEach(hour => {
+                const hourInfo = document.createElement("p");
+                hourInfo.innerHTML = `<strong>Time:</strong> ${hour.time}<br>
+                                      <strong>Temperature:</strong> ${hour.temp_c}°C<br>
+                                      <strong>humidity:</strong> ${hour.humidity}%<br>
+                                      <strong>Condition:</strong> ${hour.condition.text}<br>
+                                      <strong>Wind Speed:</strong> ${hour.wind_kph} km/h <br>
+                                      <strong>Chance of rain:</strong> ${hour.chance_of_rain}<br>
+                                      ------------------------`;
+                hourlyDiv.appendChild(hourInfo);
+            });
+            forecastWeather.appendChild(hourlyDiv);
+        }
+
+        function nextDay() {
+            document.getElementById("loader").style.display = "block"; // Show loader
+            day++;
+            fetch(`https://api.weatherapi.com/v1/forecast.json?key=2858555c919045d58dc75313242704&q=${inputData}&days=${day}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Data not found');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const forecastWeather = document.getElementById("forecastWeather");
+                    const forecastIndex = day - 1; // Adjust index to start from 0
+                    const forecast = data.forecast.forecastday[forecastIndex];
+                    forecastWeather.innerHTML = `
+                <h3 style="font-weight: 700; color: #3498db;">Weather Forecast for Day ${day}</h3>
+                <p><strong>Date:</strong> ${forecast.date}</p>
+                <p><strong>Average Temperature:</strong> ${forecast.day.avgtemp_c}°C</p>
+                <p><strong>Condition:</strong> ${forecast.day.condition.text}</p>
+                <p><strong>Max Temperature:</strong> ${forecast.day.maxtemp_c}°C</p>
+                <p><strong>Min Temperature:</strong> ${forecast.day.mintemp_c}°C</p>
+                <button onclick="nextDay()">Next Day</button>
+                <button style=" width: fit-content; margin-bottom: 20px;">No Data found</button>
+            `;
+            document.getElementById("hurly-weather-forecast").style.display = "none"
+                    document.getElementById("loader").style.display = "none"; // Hide loader
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Data not found. Please enter a valid city.');
+                    document.getElementById("loader").style.display = "none"; // Hide loader in case of error
+                });
+
+        }
+
+    </script>
+</body>
+
+</html>
